@@ -1,3 +1,5 @@
+package osm;
+
 import generated.Osm;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.logging.log4j.LogManager;
@@ -25,7 +27,7 @@ public class OsmParser {
         unmarshaller = context.createUnmarshaller();
     }
 
-    public OsmResult parseStream(String fileName) throws IOException, JAXBException, SAXException {
+    public Osm parseStream(String fileName) throws IOException, JAXBException, SAXException {
         InputStream fileInputStream = this.getClass().getClassLoader().getResourceAsStream(fileName);
         BZip2CompressorInputStream inputStream = new BZip2CompressorInputStream(fileInputStream);
         XMLReader reader = XMLReaderFactory.createXMLReader();
@@ -36,16 +38,9 @@ public class OsmParser {
         logger.info("Try to unmarshall osm");
         Osm osm = (Osm) unmarshaller.unmarshal(saxSource);
         logger.info("Process result");
-        return processOsm(osm);
-    }
-
-    private OsmResult processOsm(Osm osm) {
-        OsmResult result = new OsmResult();
-        osm.getNode().forEach(node -> {
-            result.addChangeToUser(node.getUser());
-            node.getTag().forEach(tag -> result.addNodeToKey(tag.getK()));
-        });
-        return result;
+        inputStream.close();
+        fileInputStream.close();
+        return osm;
     }
 
 }
